@@ -1,6 +1,12 @@
 
 module("core");
 
+test( "jQuery.migrateVersion", function( assert ) {
+	assert.expect( 1 );
+
+	assert.ok( /^\d+\.\d+\.[\w\-]+/.test( jQuery.migrateVersion ), "Version property" );
+});
+
 test( "jQuery(html, props)", function() {
 	expect( 3 );
 
@@ -102,6 +108,9 @@ test( "selector state", function() {
 test( "XSS injection", function() {
 	expect( 10 );
 
+	// IE6 doesn't throw exceptions, just skip it since the XSS is still stopped
+	var expectThrow = navigator.userAgent.indexOf( "MSIE 6" ) < 0;
+
 	// Bad HTML will throw on some supported versions
 	expectWarning( "leading hash", function() {
 		try {
@@ -120,7 +129,7 @@ test( "XSS injection", function() {
 		} catch ( e ) {
 			threw = true;
 		}
-		equal( threw, true, "Throw on leading-hash HTML (treated as selector)" );
+		equal( threw, expectThrow, "Throw on leading-hash HTML (treated as selector)" );
 		equal( window.XSS, false, "XSS" );
 	});
 
@@ -132,7 +141,7 @@ test( "XSS injection", function() {
 		} catch ( e ) {
 			threw = true;
 		}
-		equal( threw, true, "Throw on leading-hash HTML and space (treated as selector)" );
+		equal( threw, expectThrow, "Throw on leading-hash HTML and space (treated as selector)" );
 		equal( window.XSS, false, "XSS" );
 	});
 
@@ -144,13 +153,20 @@ test( "XSS injection", function() {
 		} catch ( e ) {
 			threw = true;
 		}
-		equal( threw, true, "Throw on leading-hash HTML (treated as selector)" );
+		equal( threw, expectThrow, "Throw on leading-hash HTML (treated as selector)" );
 		stop();
 		setTimeout(function() {
 			equal( window.XSS, false, "XSS" );
 			start();
 		}, 1000);
 	});
+});
+
+test( "jQuery( '<element>' ) usable on detached elements (#128)" , function() {
+	expect( 1 );
+
+	jQuery( "<a>" ).outerWidth();
+	ok( true, "No crash when operating on detached elements with window" );
 });
 
 test( "jQuery.parseJSON() falsy values", function() {

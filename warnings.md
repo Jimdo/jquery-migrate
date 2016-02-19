@@ -20,7 +20,7 @@ This is _not_ a warning, but a console log message the plugin shows when it firs
 
 ### JQMIGRATE: $(html) HTML strings must start with '<' character
 
-**Cause:** In jQuery 1.9, HTML strings passed to `$()` must start with a tag; in other words the first character of the string must be a `<` character. There _cannot_ be any preceding characters, including whitespace. This is done to reduce the chances of inadvertent execution of scripts that may be present in HTML that is obtained from the URL, AJAX, or other sources. Use of simple literal HTML strings like `$("<div />")` or `$("<p>hello</p>")` are unaffected since they should not have leading spaces or text.
+**Cause:** In jQuery 1.9, HTML strings passed to `$()` must start with a tag; in other words the first character of the string must be a `<` character. There _cannot_ be any preceding characters, including whitespace. This is done to reduce the chances of inadvertent execution of scripts that might be present in HTML that is obtained from the URL, AJAX, or other sources. Use of simple literal HTML strings like `$("<div />")` or `$("<p>hello</p>")` are unaffected since they should not have leading spaces or text.
 
 **Solution**: Use the `$.parseHTML()` method to parse arbitrary HTML, especially HTML from external sources. To obtain a jQuery object that has the parsed HTML without running scripts, use `$($.parseHTML("string"))`. To run scripts in the HTML as well, use `$($.parseHTML("string", document, true))` instead. We do not recommend running `$.trim()` on the string to circumvent this check.
 
@@ -93,6 +93,13 @@ $.ajax({
 
 **Solution:** Change any use of `$().error(fn)` to `$().on("error", fn)`.
 
+### JQMIGRATE: jQuery.fn.load() is deprecated
+### JQMIGRATE: jQuery.fn.unload() is deprecated
+
+**Cause:** The `.load()` and `.unload()` event methods attach a "load" and "unload" event, respectively, to an element. They were deprecated in 1.9 to reduce confusion with the AJAX-related `.load()` method that loads HTML fragments and which has not been deprecated. Note that these two methods are used almost exclusively with a jQuery collection consisting of only the `window` element. Also note that attaching an "unload" or "beforeunload" event on a window via any means can impact performance on some browsers because it disables the document cache (bfcache). For that reason we strongly advise against it.
+
+**Solution:** Change any use of `$().load(fn)` to `$().on("load", fn)` and `$().unload(fn)` to `$().on("unload", fn)`.
+
 ### JQMIGRATE: jQuery.fn.toggle(handler, handler...) is deprecated
 
 **Cause:** There are two completely different meanings for the `.toggle()` method. The use of `.toggle()` to show or hide elements is _not_ affected. The use of `.toggle()` as a specialized click handler was deprecated in 1.8 and removed in 1.9. 
@@ -142,7 +149,7 @@ $(document).ajaxStart(function(){ $("#status").text("Ajax started"); });
 
 **Solution**: Use `$().val( val )` (for form controls) or `$().prop( "value", val )` (for other elements) to set the *current* value.
 
-### JQMIGRATE: jQuery.fn.attr('selected') may use property instead of attribute
+### JQMIGRATE: jQuery.fn.attr('selected') might use property instead of attribute
 
 **Cause**: Prior to jQuery 1.9, `$().attr("checked")` etc. would sometimes use the checked|selected *property* instead of the *attribute* when interacting with non-XML elements, despite the fact that browsers and the HTML specifications allow the properties (current state) to differ from the attributes (initial/default state). This was a holdover from earlier versions of jQuery that did not offer `$().prop`.
 
@@ -163,7 +170,7 @@ $(document).ajaxStart(function(){ $("#status").text("Ajax started"); });
 
 ### JQMIGRATE: jQuery.clean() is deprecated
 
-**Cause**: `jQuery.buildFragment()` and `jQuery.clean()` are undocumented internal methods. The signature of `jQuery.buildFragment()` was changed in jQuery 1.8 and 1.9, and `jQuery.clean()` was removed in 1.9. However, we are aware of some plugins or other code that may be using them.
+**Cause**: `jQuery.buildFragment()` and `jQuery.clean()` are undocumented internal methods. The signature of `jQuery.buildFragment()` was changed in jQuery 1.8 and 1.9, and `jQuery.clean()` was removed in 1.9. However, we are aware of some plugins or other code that might be using them.
 
 **Solution**: Rewrite any code that makes use of these or any other undocumented methods. For example the `jQuery.parseHTML()` method, introduced in jQuery 1.8, can convert HTML to an array of DOM elements that you can append to a document fragment.
 
@@ -196,3 +203,9 @@ $(document).ajaxStart(function(){ $("#status").text("Ajax started"); });
 **Cause**: The `jQuery.swap()` method temporarily exchanges a set of CSS properties. It was never documented as part of jQuery's public API and should not be used because it can cause performance problems due to forced layout.
 
 **Solution**: Rework the code to avoid calling `jQuery.swap()`, or explicitly set and restore the properties you need to change.
+
+### JQMIGRATE: 'ready' event is deprecated
+
+**Cause**: Using one of jQuery's API methods to bind a "ready" event, e.g. `$( document ).on( "ready", fn )`, will cause the function to be called when the document is ready, but only if it is attached before the browser fires its own `DOMContentLoaded` event. That makes it unreliable for many uses, particularly ones where jQuery or its plugins are loaded asynchronously after page load.
+
+**Solution**: Replace any use of `$( document ).on( "ready", fn )` with `$( document ).ready( fn )` or more simply, just `$( fn )`. These alternative methods work reliably even when the document is already loaded.

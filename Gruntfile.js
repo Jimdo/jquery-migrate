@@ -19,6 +19,7 @@ module.exports = function(grunt) {
 		pkg: grunt.file.readJSON("package.json"),
 		files: [
 			"src/intro.js",
+			"src/version.js",
 			"src/migrate.js",
 			"src/attributes.js",
 			"src/core.js",
@@ -32,20 +33,19 @@ module.exports = function(grunt) {
 			"src/outro.js"
 		],
 		tests: {
-			"jquery-compat": [
-				"dev+compat-git",
-				"min+compat-git",
-				"dev+1.11.1",
+			"jquery-1": [
+				"dev+1.x-git",
+				"dev+1.11.3",
 				"dev+1.10.2",
 				"dev+1.9.1",
 				"dev+1.8.3",
 				"dev+1.7.2",
 				"dev+1.6.4"
 			],
-			jquery: [
-				"dev+git",
-				"min+git",
-				"dev+2.1.1",
+			"jquery-2": [
+				"dev+2.x-git",
+				"min+2.x-git.min",
+				"dev+2.1.4",
 				"dev+2.0.3"
 			]
 		},
@@ -156,7 +156,7 @@ module.exports = function(grunt) {
 				plugin_jquery[0] + "&jquery=" + plugin_jquery[1];
 		});
 
-		// TODO: create separate job for compat-git/git so we can do different browsersets
+		// TODO: create separate job for git so we can do different browsersets
 		testswarm.createClient( {
 			url: config.swarmUrl
 		} )
@@ -179,33 +179,5 @@ module.exports = function(grunt) {
 				done( passed );
 			}
 		);
-	});
-
-	// Update manifest for jQuery plugin registry
-	grunt.registerTask( "manifest", function() {
-		var pkg = grunt.config( "pkg" );
-		grunt.file.write( "migrate.jquery.json", JSON.stringify({
-			name: "migrate",
-			title: pkg.title,
-			description: pkg.description,
-			keywords: pkg.keywords,
-			version: pkg.version,
-			author: {
-				name: pkg.author.name,
-				url: pkg.author.url.replace( "master", pkg.version )
-			},
-			maintainers: pkg.maintainers,
-			licenses: pkg.licenses.map(function( license ) {
-				license.url = license.url.replace( "master", pkg.version );
-				return license;
-			}),
-			bugs: pkg.bugs,
-			homepage: pkg.homepage,
-			docs: pkg.homepage,
-			download: "https://github.com/jquery/jquery-migrate/blob/" + pkg.version + "/README.md#download",
-			dependencies: {
-				jquery: ">=1.6.4"
-			}
-		}, null, "\t" ) );
 	});
 };
